@@ -1,5 +1,7 @@
 package com.jite.flow.engine;
 
+import com.jite.flow.constant.Const;
+
 /**
  * @author Lux Sun
  * @date 2021/10/11
@@ -19,15 +21,15 @@ public class JobLine {
         return fromId;
     }
 
-    public void setFromId(String fromId) {
-        this.fromId = fromId;
-    }
-
     public String getToId() {
         return toId;
     }
 
-    public void setToId(String toId) {
-        this.toId = toId;
+    public String getFromToId() {
+        return getFromId() + Const.JobLine.Mark.FROM_TO + getToId();
+    }
+
+    public String getToFromId() {
+        return getToId() + Const.JobLine.Mark.FROM_TO + getFromId();
     }
 }

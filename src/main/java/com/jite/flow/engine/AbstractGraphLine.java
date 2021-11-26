@@ -15,15 +15,6 @@ public abstract class AbstractGraphLine extends AbstractGraph {
         return getName();
     }
 
-    @Override
-    protected String getJobNodeId() {
-        return getFromToId();
-    }
-
-    public String getFromToId() {
-        return getFromId() + "_" + getToId();
-    }
-
     public String getFromId() {
         return fromId;
     }

@@ -23,7 +23,6 @@ public class JobModuleBuildHandler {
 
     static {
         register(JobModuleIdEnum.DEFAULT_JOB, new DefaultJobModule());
-        register(JobModuleIdEnum.LINE_JOB, new DefaultJobModule());
     }
 
     public static void init() {

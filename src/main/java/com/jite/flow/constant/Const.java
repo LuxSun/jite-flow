@@ -16,6 +16,33 @@ public class Const {
         }
     }
 
+    public static class JobNode {
+
+        public static class Call {
+            public static Boolean IS_CALLED = false;
+            public static Boolean NON_CALLED = true;
+        }
+    }
+
+    public static class JobLine {
+
+        public static class Mark {
+            public static String FROM_TO = "@";
+        }
+
+        public static class Call {
+            public static Boolean IS_CALLED = false;
+            public static Boolean NON_CALLED = true;
+        }
+    }
+
+    public static class AbstractJobModule {
+
+        public static class Key {
+            public static String ID = "id";
+        }
+    }
+
     public static class Graph {
 
         public static class NodeLine {

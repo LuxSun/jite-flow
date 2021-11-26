@@ -13,10 +13,6 @@ public class JobNode {
 
     private String id;
 
-    private Boolean boolGraphNode;
-
-    private Boolean boolGraphLine;
-
     private JobNode parentJobGraphNode;
 
     private Map<String, JobNode> parentJobGraphNodeMap;
@@ -33,22 +29,20 @@ public class JobNode {
 
     private JobModule jobModule;
 
-    private String jobModuleBody;
+    private String jobModuleParam;
 
     private AbstractGraph abstractGraph;
 
-    public JobNode(String id, Boolean boolGraphNode, Boolean boolGraphLine, String name, String jobModuleId, String jobModuleBody, Boolean async, AbstractGraph abstractGraph) {
+    public JobNode(String id, String name, String jobModuleId, String jobModuleParam, Boolean async, AbstractGraph abstractGraph) {
         this.id = id;
-        this.boolGraphNode = boolGraphNode;
-        this.boolGraphLine = boolGraphLine;
         this.name = name;
         this.async = async;
         this.jobModuleId = jobModuleId;
-        this.jobModuleBody = jobModuleBody;
+        this.jobModuleParam = jobModuleParam;
         this.abstractGraph = abstractGraph;
 
-        if (FlowUtil.StringUtil.isNotEmpty(jobModuleBody)) {
-            this.jobModule = JobModuleBuildHandler.getJobModule(jobModuleId, jobModuleBody);
+        if (FlowUtil.StringUtil.isNotEmpty(jobModuleParam)) {
+            this.jobModule = JobModuleBuildHandler.getJobModule(jobModuleId, jobModuleParam);
         }
     }
 
@@ -63,28 +57,12 @@ public class JobNode {
         this.jobModule = jobModule;
     }
 
-    public String getJobModuleBody() {
-        return jobModuleBody;
+    public String getJobModuleParam() {
+        return jobModuleParam;
     }
 
-    public Boolean getBoolGraphNode() {
-        return boolGraphNode;
-    }
-
-    public void setBoolGraphNode(Boolean boolGraphNode) {
-        this.boolGraphNode = boolGraphNode;
-    }
-
-    public Boolean getBoolGraphLine() {
-        return boolGraphLine;
-    }
-
-    public void setBoolGraphLine(Boolean boolGraphLine) {
-        this.boolGraphLine = boolGraphLine;
-    }
-
-    public void setJobModuleBody(String jobModuleBody) {
-        this.jobModuleBody = jobModuleBody;
+    public void setJobModuleParam(String jobModuleParam) {
+        this.jobModuleParam = jobModuleParam;
     }
 
     public JobNode getParentJobGraphNode() {

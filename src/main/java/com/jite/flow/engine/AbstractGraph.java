@@ -12,11 +12,7 @@ public abstract class AbstractGraph {
 
     protected String name;
 
-    protected String jobModuleBody;
-
     protected abstract String getJobNodeName();
-
-    protected abstract String getJobNodeId();
 
     public String getId() {
         return id;
@@ -40,13 +36,5 @@ public abstract class AbstractGraph {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public String getJobModuleBody() {
-        return jobModuleBody;
-    }
-
-    public void setJobModuleBody(String jobModuleBody) {
-        this.jobModuleBody = jobModuleBody;
     }
 }

@@ -8,12 +8,13 @@ public abstract class AbstractGraphNode extends AbstractGraph {
 
     protected String moduleId;
 
+    protected String moduleParam;
+
     @Override
     protected String getJobNodeName() {
         return getName();
     }
 
-    @Override
     protected String getJobNodeId() {
         return getId();
     }
@@ -24,5 +25,13 @@ public abstract class AbstractGraphNode extends AbstractGraph {
 
     public void setModuleId(String moduleId) {
         this.moduleId = moduleId;
+    }
+
+    public String getModuleParam() {
+        return moduleParam;
+    }
+
+    public void setModuleParam(String moduleParam) {
+        this.moduleParam = moduleParam;
     }
 }

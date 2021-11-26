@@ -6,7 +6,5 @@ package com.jite.flow.constant;
  */
 public enum JobModuleIdEnum {
 
-    LINE_JOB,
-
     DEFAULT_JOB
 }

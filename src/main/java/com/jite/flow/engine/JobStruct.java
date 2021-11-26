@@ -5,7 +5,6 @@ import com.alibaba.fastjson.JSON;
 import com.jite.flow.async.AsyncGraph;
 import com.jite.flow.config.LoggerConfig;
 import com.jite.flow.constant.Const;
-import com.jite.flow.constant.JobModuleIdEnum;
 import com.jite.flow.handler.JobBuildHandler;
 import com.jite.flow.handler.JobModuleBuildHandler;
 import com.jite.flow.job.JobLocal;
@@ -36,19 +35,19 @@ public class JobStruct {
     private List<Map<String, Object>> paramList;
 
     /**
-     * 原始图 node/line id 对应该 参数模板
+     * 原始图 nodeId 对应 参数模板
      */
     private Map<String, Map<String, Object>> idToParamMap;
 
     /**
      * 原始图 Line Id To FromToId & FromToId To Id Map
      */
-    private Map<String, String> lineIdMap;
+//    private Map<String, String> lineIdMap;
 
     /**
-     * Aysnc 原始图 Async Line fromToId 对应该 子树 Async 原始图
+     * Aysnc 原始图 Async Line fromToId 对应 子树 Async 原始图
      */
-    private Map<String, AsyncGraph> asyncGraphMap;
+//    private Map<String, AsyncGraph> asyncGraphMap;
 
     /**
      * 原始图节点
@@ -61,22 +60,22 @@ public class JobStruct {
     private List<? extends AbstractGraphLine> abstractGraphLineList;
 
     /**
-     * 原始图节点 Id 对应该 原始图节点 Map
+     * 原始图节点 Id 对应 原始图节点 Map
      */
     private Map<String, AbstractGraphNode> abstractGraphNodeMap;
 
     /**
-     * 原始图线 Id(from + to) 对应该 原始图线 Map
+     * 原始图线 Id(from/to) 对应 原始图线 Map
      */
     private Map<String, AbstractGraphLine> abstractGraphLineMap;
 
     /**
-     * 原始图节点 Id 对应该 原始图子节点列表 Map
+     * 原始图节点 Id 对应 原始图子节点列表 Map
      */
     private Map<String, List<AbstractGraphNode>> childAbstractGraphNodeListMap;
 
     /**
-     * 原始图节点 Id 对应该 原始图父节点列表 Map
+     * 原始图节点 Id 对应 原始图父节点列表 Map
      */
     private Map<String, List<AbstractGraphNode>> parentAbstractGraphNodeListMap;
 
@@ -91,11 +90,12 @@ public class JobStruct {
     private List<String> graphNodeStartIdList;
 
     /**
-     * 原始图结束节点 Id 对应该 是否异步 Map
+     * TODO 取名
+     * 原始图结束节点 Id 对应 是否异步 Map
      * TRUE: ASYNC
      * FALSE: SYNC
      */
-    private Map<String, Boolean> mainGraphNodeEndIdRateMap;
+//    private Map<String, Boolean> mainGraphNodeEndIdRateMap;
 
     /**
      * 作业图节点
@@ -110,12 +110,12 @@ public class JobStruct {
     private List<JobLine> jobLineList;
 
     /**
-     * 作业节点 Id 对应该 作业节点 Map
+     * 作业节点 Id 对应 作业节点 Map
      */
     private Map<String, JobNode> jobIdToNodeMap;
 
     /**
-     * 作业节点 Id 对应该 作业本地 Map
+     * 作业节点 Id 对应 作业本地 Map
      */
     private Map<String, JobLocal> jobIdToLocalMap;
 
@@ -130,12 +130,12 @@ public class JobStruct {
     private Map<String, List<String>> childJobLineMap;
 
     /**
-     * 线程池
+     * 线程池: 提供给引擎 JobNode 执行作业
      */
     private ExecutorService executorService;
 
     /**
-     * 作业节点 Id 对应该 作业线程响应体 Map
+     * 作业节点 Id 对应 作业线程响应体 Map
      * 必须使用高并发容器, 否则会引发 modCount 问题
      * 比如一个 Job A 入度多个的时候, 其中 Job B 并未开始工作
      * 但是 Job A 已经开始等待所有父 Job 工作完毕, 此时因为已经在遍历中
@@ -145,14 +145,14 @@ public class JobStruct {
     private Map<String, Future> jobNodeFutureMap;
 
     /**
-     * 作业节点 Id 对应该 作业执行状态
+     * 作业节点 Id 对应 作业执行状态
      * TRUE: 已执行
      * FALSE: 未执行
      */
     private Map<String, Boolean> jobNodeCalledMap;
 
     /**
-     * 子到父关系线 Id 对应该 关系线使用状态
+     * 子到父关系线 Id 对应 关系线使用状态
      * TRUE: 已使用
      * FALSE: 未使用
      */
@@ -167,20 +167,20 @@ public class JobStruct {
         // 初始化日志框架
         initLogger();
 
-        // 初始化作业模板
+        // 初始化作业模板、作业属性模板
         initJobs();
 
-        // 初始化起始节点 Id
-        initGraphStartEndId();
+        // 初始化所有开始节点 Id
+        initGraphStartIds();
 
-        // 初始化 lineIdMap、idToParamMap、abstractGraphNodeMap、abstractGraphLineMap、parentAbstractGraphNodeListMap、childAbstractGraphNodeListMap、aliasGraphMap
+        // 初始化 idToParamMap、abstractGraphNodeMap、abstractGraphLineMap、parentAbstractGraphNodeListMap、childAbstractGraphNodeListMap
         initGraphMaps();
 
         // 初始化异步原始图 asyncGraphMap
-        initAsyncGraphs();
+//        initAsyncGraphs();
 
         // Graph模式 Node/Line 转 Job模式 Node/Line
-        graphNodeLineToJobNodeLine();
+        initJobNodeLineList();
 
         // 初始化 jobNodeFutureMap、jobNodeCalledMap、jobIdToNodeMap
         initJobNodeMaps();
@@ -188,7 +188,7 @@ public class JobStruct {
         // 初始化 parentJobLineMap、childJobLineMap、jobToFromLineCalledMap
         initJobLineMaps();
 
-        initParentJobNodeLineMap();
+//        initParentJobNodeLineMap();
 
         // 初始化 jobIdToModuleMap
         initJobLocalMap();
@@ -198,140 +198,68 @@ public class JobStruct {
     }
 
     /**
-     * 因为 JobNode 包含 GraphNode + GraphLine 所以
-     * GraphNode 父亲有 JobLine + JobNode
-     * GraphLine 父亲仅有 JobNode 业务才有意义
+     * 初始化日志框架
      * @param
      */
-    private void initParentJobNodeLineMap() {
-        List<String> parentJobNodeIdList;
-        for (JobNode jobNode : jobNodeList) {
-            parentJobNodeIdList = parentJobLineMap.get(jobNode.getId());
-            if (FlowUtil.CollectionUtil.isNotEmpty(parentJobNodeIdList)) {
+    private void initLogger() {
+        LoggerConfig.init();
+    }
 
-                boolean isNode = jobNode.getBoolGraphNode();
+    /**
+     * 初始化作业模板、作业属性模板
+     * @param
+     */
+    private void initJobs() {
+        JobBuildHandler.init();
+        JobModuleBuildHandler.init();
+    }
 
-                if (isNode && FlowUtil.ObjectUtil.isNull(jobNode.getParentJobGraphLineMap())) {
-                    jobNode.setParentJobGraphLineMap(new HashMap<>());
-                }
-                if (FlowUtil.ObjectUtil.isNull(jobNode.getParentJobGraphNodeMap())) {
-                    jobNode.setParentJobGraphNodeMap(new HashMap<>());
-                }
+    /**
+     * 初始化所有开始节点 Id
+     * @param
+     */
+    private void initGraphStartIds() {
+        this.graphNodeStartIdList = new ArrayList<>();
+        HashSet<String> initStartIdSet = new HashSet<>();
 
-                if (isNode) {
-                    for (String parentGraphLineId : parentJobNodeIdList) {
-                        JobNode parentJobNode = jobIdToNodeMap.get(parentGraphLineId);
-                        jobNode.getParentJobGraphLineMap().put(parentGraphLineId, parentJobNode);
-                        String parentGraphNodeId = parentJobLineMap.get(parentGraphLineId).get(0);
-                        jobNode.getParentJobGraphNodeMap().put(parentGraphNodeId, jobIdToNodeMap.get(parentGraphNodeId));
-                    }
-                } else {
-                    for (String parentGraphNodeId : parentJobNodeIdList) {
-                        JobNode parentJobNode = jobIdToNodeMap.get(parentGraphNodeId);
-                        jobNode.getParentJobGraphNodeMap().put(parentGraphNodeId, parentJobNode);
-                    }
-                }
+        for (AbstractGraphLine abstractGraphLine : abstractGraphLineList) {
+            initStartIdSet.add(abstractGraphLine.getToId());
+        }
+
+        String graphNodeId;
+        for (AbstractGraphNode abstractGraphNode : abstractGraphNodeList) {
+            graphNodeId = abstractGraphNode.getId();
+            // 找到起始节点
+            if (!initStartIdSet.contains(graphNodeId)) {
+                this.graphNodeStartIdList.add(graphNodeId);
             }
         }
     }
 
     /**
-     * 筛选出异步调用子树, 但不剪枝掉原始图, 因为需要在 core 里做判断等待父节点完成后才开始异步调用子树
+     * 初始化 idToParamMap、abstractGraphNodeMap、abstractGraphLineMap
+     * parentAbstractGraphNodeListMap、childAbstractGraphNodeListMap
      * @param
      */
-    private void initAsyncGraphs() {
-        this.asyncGraphMap = new HashMap<>();
-        Map<String, Boolean> idToUsedMap = new HashMap<>();
-
-        String fromId;
-        String toId;
-        String fromToId;
-        Queue<String> graphNodeIdQueue = new LinkedList<>(this.graphNodeStartIdList);
-        String graphNodeId;
-        while (!graphNodeIdQueue.isEmpty()) {
-            graphNodeId = graphNodeIdQueue.poll();
-            List<AbstractGraphNode> abstractGraphNodeList = childAbstractGraphNodeListMap.get(graphNodeId);
-            if (FlowUtil.CollectionUtil.isEmpty(abstractGraphNodeList)) {
-                continue;
-            }
-            Boolean isAsync;
-            for (AbstractGraphNode childAbstractGraphNode : abstractGraphNodeList) {
-                fromId = graphNodeId;
-                toId = childAbstractGraphNode.getId();
-                fromToId = fromId + "_" + toId;
-                graphNodeIdQueue.add(toId);
-                // 防止重复添加异步调用原始图, 以及异步原始图嵌套的子异步原始图无需再剪
-                isAsync = FlowUtil.BooleanUtil.isTrue(abstractGraphLineMap.get(fromToId).getAsync()) && !idToUsedMap.containsKey(fromId) && !idToUsedMap.containsKey(toId);
-                if (isAsync) {
-                    AsyncGraph asyncGraph = new AsyncGraph(new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
-                    initAsyncGraph(toId, asyncGraph, idToUsedMap);
-                    this.asyncGraphMap.put(fromToId, asyncGraph);
-                }
-            }
-        }
-    }
-
-    private void initAsyncGraphLeafNodeId(String asyncGraphLeafNodeId) {
-        mainGraphNodeEndIdRateMap.put(asyncGraphLeafNodeId, Const.Node.DispatchRate.ASYNC);
-    }
-
-    private void initAsyncGraph(String fromId,
-                                AsyncGraph asyncGraph,
-                                Map<String, Boolean> idToUsedMap) {
-
-        if (idToUsedMap.containsKey(fromId)) {
-            return;
-        }
-
-        idToUsedMap.put(fromId, true);
-        AbstractGraphNode abstractGraphNode = abstractGraphNodeMap.get(fromId);
-        asyncGraph.getAsyncAbstractGraphNodeList().add(abstractGraphNode);
-        asyncGraph.getParamList().add(this.idToParamMap.get(fromId));
-
-        List<AbstractGraphNode> childAbstractGraphNodeList = childAbstractGraphNodeListMap.get(fromId);
-        // 剪枝 & 异步调用图的叶子节点
-        if (FlowUtil.CollectionUtil.isEmpty(childAbstractGraphNodeList)) {
-            initAsyncGraphLeafNodeId(fromId);
-            return;
-        }
-
-        for (AbstractGraphNode childAbstractGraphNode : childAbstractGraphNodeList) {
-            String toId = childAbstractGraphNode.getId();
-            String fromToId = fromId + "_" + toId;
-            asyncGraph.getAsyncAbstractGraphLineList().add(abstractGraphLineMap.get(fromToId));
-            asyncGraph.getParamList().add(this.idToParamMap.get(this.lineIdMap.get(fromToId)));
-            initAsyncGraph(toId, asyncGraph, idToUsedMap);
-        }
-    }
-
     private void initGraphMaps() {
         abstractGraphNodeMap = new HashMap<>();
         abstractGraphLineMap = new HashMap<>();
-        lineIdMap = new HashMap<>();
         childAbstractGraphNodeListMap = new HashMap<>();
         parentAbstractGraphNodeListMap = new HashMap<>();
         idToParamMap = new HashMap<>();
 
-        paramList.forEach(param -> idToParamMap.put((String) param.get("id"), param));
+        paramList.forEach(param -> idToParamMap.put((String) param.get(Const.AbstractJobModule.Key.ID), param));
+
         abstractGraphNodeList.forEach(abstractGraphNode -> {
-            abstractGraphNode.setJobModuleBody(JSON.toJSONString(idToParamMap.get(abstractGraphNode.getId())));
+            abstractGraphNode.setModuleParam(JSON.toJSONString(idToParamMap.get(abstractGraphNode.getId())));
             abstractGraphNodeMap.put(abstractGraphNode.getId(), abstractGraphNode);
         });
 
-        String lineId;
         String fromId;
         String toId;
-        String fromToId;
         for (AbstractGraphLine abstractGraphLine : abstractGraphLineList) {
             fromId = abstractGraphLine.getFromId();
             toId = abstractGraphLine.getToId();
-            fromToId = abstractGraphLine.getFromToId();
-            lineId = abstractGraphLine.getId();
-
-            abstractGraphLine.setJobModuleBody(JSON.toJSONString(idToParamMap.get(abstractGraphLine.getId())));
-            abstractGraphLineMap.put(fromToId, abstractGraphLine);
-            lineIdMap.put(lineId, fromToId);
-            lineIdMap.put(fromToId, lineId);
 
             if (!parentAbstractGraphNodeListMap.containsKey(toId)) {
                 parentAbstractGraphNodeListMap.put(toId, new ArrayList<>());
@@ -345,50 +273,178 @@ public class JobStruct {
         }
     }
 
-    private void initGraphStartEndId() {
-        this.graphNodeStartIdList = new ArrayList<>();
-        this.mainGraphNodeEndIdRateMap = new HashMap<>();
-        HashSet<String> initStartIdSet = new HashSet<>();
-        HashSet<String> initEndIdSet = new HashSet<>();
+    /**
+     * TODO 重构
+     * 因为 JobNode 包含 GraphNode + GraphLine 所以
+     * GraphNode 父亲有 JobLine + JobNode
+     * GraphLine 父亲仅有 JobNode 业务才有意义
+     * @param
+     */
+//    private void initParentJobNodeLineMap() {
+//        List<String> parentJobNodeIdList;
+//        for (JobNode jobNode : jobNodeList) {
+//            parentJobNodeIdList = parentJobLineMap.get(jobNode.getId());
+//            if (FlowUtil.CollectionUtil.isNotEmpty(parentJobNodeIdList)) {
+//
+//                boolean isNode = jobNode.getBoolGraphNode();
+//
+//                if (isNode && FlowUtil.ObjectUtil.isNull(jobNode.getParentJobGraphLineMap())) {
+//                    jobNode.setParentJobGraphLineMap(new HashMap<>());
+//                }
+//                if (FlowUtil.ObjectUtil.isNull(jobNode.getParentJobGraphNodeMap())) {
+//                    jobNode.setParentJobGraphNodeMap(new HashMap<>());
+//                }
+//
+//                if (isNode) {
+//                    for (String parentGraphLineId : parentJobNodeIdList) {
+//                        JobNode parentJobNode = jobIdToNodeMap.get(parentGraphLineId);
+//                        jobNode.getParentJobGraphLineMap().put(parentGraphLineId, parentJobNode);
+//                        String parentGraphNodeId = parentJobLineMap.get(parentGraphLineId).get(0);
+//                        jobNode.getParentJobGraphNodeMap().put(parentGraphNodeId, jobIdToNodeMap.get(parentGraphNodeId));
+//                    }
+//                } else {
+//                    for (String parentGraphNodeId : parentJobNodeIdList) {
+//                        JobNode parentJobNode = jobIdToNodeMap.get(parentGraphNodeId);
+//                        jobNode.getParentJobGraphNodeMap().put(parentGraphNodeId, parentJobNode);
+//                    }
+//                }
+//            }
+//        }
+//    }
 
-        for (AbstractGraphLine abstractGraphLine : abstractGraphLineList) {
-            initStartIdSet.add(abstractGraphLine.getToId());
-            initEndIdSet.add(abstractGraphLine.getFromId());
+    /**
+     * TODO 重做
+     * 筛选出异步调用子树, 但不剪枝掉原始图, 因为需要在 core 里做判断等待父节点完成后才开始异步调用子树
+     * @param
+     */
+//    private void initAsyncGraphs() {
+//        this.asyncGraphMap = new HashMap<>();
+//        Map<String, Boolean> idToUsedMap = new HashMap<>();
+//
+//        String fromId;
+//        String toId;
+//        String fromToId;
+//        Queue<String> graphNodeIdQueue = new LinkedList<>(this.graphNodeStartIdList);
+//        String graphNodeId;
+//        while (!graphNodeIdQueue.isEmpty()) {
+//            graphNodeId = graphNodeIdQueue.poll();
+//            List<AbstractGraphNode> abstractGraphNodeList = childAbstractGraphNodeListMap.get(graphNodeId);
+//            if (FlowUtil.CollectionUtil.isEmpty(abstractGraphNodeList)) {
+//                continue;
+//            }
+//            Boolean isAsync;
+//            for (AbstractGraphNode childAbstractGraphNode : abstractGraphNodeList) {
+//                fromId = graphNodeId;
+//                toId = childAbstractGraphNode.getId();
+//                fromToId = fromId + "_" + toId;
+//                graphNodeIdQueue.add(toId);
+//                // 防止重复添加异步调用原始图, 以及异步原始图嵌套的子异步原始图无需再剪
+//                isAsync = FlowUtil.BooleanUtil.isTrue(abstractGraphLineMap.get(fromToId).getAsync()) && !idToUsedMap.containsKey(fromId) && !idToUsedMap.containsKey(toId);
+//                if (isAsync) {
+//                    AsyncGraph asyncGraph = new AsyncGraph(new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
+//                    initAsyncGraph(toId, asyncGraph, idToUsedMap);
+//                    this.asyncGraphMap.put(fromToId, asyncGraph);
+//                }
+//            }
+//        }
+//    }
+//
+//    private void initAsyncGraphLeafNodeId(String asyncGraphLeafNodeId) {
+//        mainGraphNodeEndIdRateMap.put(asyncGraphLeafNodeId, Const.Node.DispatchRate.ASYNC);
+//    }
+//
+//    private void initAsyncGraph(String fromId,
+//                                AsyncGraph asyncGraph,
+//                                Map<String, Boolean> idToUsedMap) {
+//
+//        if (idToUsedMap.containsKey(fromId)) {
+//            return;
+//        }
+//
+//        idToUsedMap.put(fromId, true);
+//        AbstractGraphNode abstractGraphNode = abstractGraphNodeMap.get(fromId);
+//        asyncGraph.getAsyncAbstractGraphNodeList().add(abstractGraphNode);
+//        asyncGraph.getParamList().add(this.idToParamMap.get(fromId));
+//
+//        List<AbstractGraphNode> childAbstractGraphNodeList = childAbstractGraphNodeListMap.get(fromId);
+//        // 剪枝 & 异步调用图的叶子节点
+//        if (FlowUtil.CollectionUtil.isEmpty(childAbstractGraphNodeList)) {
+//            initAsyncGraphLeafNodeId(fromId);
+//            return;
+//        }
+//
+//        for (AbstractGraphNode childAbstractGraphNode : childAbstractGraphNodeList) {
+//            String toId = childAbstractGraphNode.getId();
+//            String fromToId = fromId + "_" + toId;
+//            asyncGraph.getAsyncAbstractGraphLineList().add(abstractGraphLineMap.get(fromToId));
+//            asyncGraph.getParamList().add(this.idToParamMap.get(this.lineIdMap.get(fromToId)));
+//            initAsyncGraph(toId, asyncGraph, idToUsedMap);
+//        }
+//    }
+
+    /**
+     * Graph模式 Node/Line 转 Job模式 Node/Line
+     * @param
+     */
+    private void initJobNodeLineList() {
+        jobNodeList = new ArrayList<>();
+        jobLineList = new ArrayList<>();
+        abstractGraphNodeList.forEach(abstractGraphNode -> jobNodeList.add(new JobNode(abstractGraphNode.getId(), getJobNodeName(abstractGraphNode), abstractGraphNode.getModuleId(), abstractGraphNode.getModuleParam(), abstractGraphNode.getAsync(), abstractGraphNode)));
+        abstractGraphLineList.forEach(abstractGraphLine -> jobLineList.add(new JobLine(abstractGraphLine.getFromId(), abstractGraphLine.getToId())));
+    }
+
+    /**
+     * 初始化 jobNodeFutureMap、jobNodeCalledMap、jobIdToNodeMap
+     * @param
+     */
+    private void initJobNodeMaps() {
+        jobNodeFutureMap = new ConcurrentHashMap<>();
+        jobIdToNodeMap = new HashMap<>();
+        jobNodeCalledMap = new HashMap<>();
+
+        String jobNodeId;
+        for (JobNode jobNode : jobNodeList) {
+            jobNodeId = jobNode.getId();
+            jobIdToNodeMap.put(jobNodeId, jobNode);
+            jobNodeCalledMap.put(jobNodeId, Const.JobNode.Call.NON_CALLED);
         }
+    }
 
-        String graphNodeId;
-        for (AbstractGraphNode abstractGraphNode : abstractGraphNodeList) {
-            graphNodeId = abstractGraphNode.getId();
-            if (!initStartIdSet.contains(graphNodeId)) {
-                this.graphNodeStartIdList.add(graphNodeId);
+    /**
+     * 初始化 parentJobLineMap、childJobLineMap、jobToFromLineCalledMap
+     * @param
+     */
+    private void initJobLineMaps() {
+        parentJobLineMap = new HashMap<>();
+        childJobLineMap = new HashMap<>();
+        jobToFromLineCalledMap = new HashMap<>();
+
+        String fromId;
+        String toId;
+        for (JobLine jobLine : jobLineList) {
+            fromId = jobLine.getFromId();
+            toId = jobLine.getToId();
+
+            if (!childJobLineMap.containsKey(fromId)) {
+                childJobLineMap.put(fromId, new ArrayList<>());
             }
-            if (!initEndIdSet.contains(graphNodeId)) {
-                this.mainGraphNodeEndIdRateMap.put(graphNodeId, Const.Node.DispatchRate.SYNC);
+            childJobLineMap.get(fromId).add(toId);
+
+            if (!parentJobLineMap.containsKey(toId)) {
+                parentJobLineMap.put(toId, new ArrayList<>());
             }
+            parentJobLineMap.get(toId).add(fromId);
+
+            // TODO 待确认是否有用
+            jobToFromLineCalledMap.put(jobLine.getToFromId(), Const.JobLine.Call.NON_CALLED);
         }
     }
 
-    private void initLogger() {
-        LoggerConfig.init();
-    }
-
-    private void initJobs() {
-        JobBuildHandler.init();
-        JobModuleBuildHandler.init();
-    }
-
-    private void initOthers() {
-        countDownLatch = new CountDownLatch((int) mainGraphNodeEndIdRateMap.values().stream().filter(item -> FlowUtil.BooleanUtil.isFalse(item.booleanValue())).count());
-        executorService = Executors.newFixedThreadPool(10);
-
-        if (FlowUtil.StringUtil.isEmpty(id)) {
-            id = FlowUtil.UUIDUtil.randomUUID();
-        }
-
-        jobNodeStartList = new ArrayList<>();
-        this.graphNodeStartIdList.forEach(graphNodeStartId -> jobNodeStartList.add(jobIdToNodeMap.get(graphNodeStartId)));
-    }
-
+    /**
+     * TODO check
+     * 初始化 jobIdToModuleMap
+     * @param
+     */
     private void initJobLocalMap() {
         jobIdToLocalMap = new HashMap<>();
 
@@ -422,66 +478,20 @@ public class JobStruct {
         }
     }
 
-    private void initJobNodeMaps() {
-        jobNodeFutureMap = new ConcurrentHashMap<>();
-        jobIdToNodeMap = new HashMap<>();
-        jobNodeCalledMap = new HashMap<>();
+    /**
+     * 初始化 executorService、id(默认值: UUID)、起始作业节点
+     * @param
+     */
+    private void initOthers() {
+        countDownLatch = new CountDownLatch((int) mainGraphNodeEndIdRateMap.values().stream().filter(item -> FlowUtil.BooleanUtil.isFalse(item.booleanValue())).count());
+        executorService = Executors.newFixedThreadPool(10);
 
-        String jobNodeId;
-        for (JobNode jobNode : jobNodeList) {
-            jobNodeId = jobNode.getId();
-            jobIdToNodeMap.put(jobNodeId, jobNode);
-            jobNodeCalledMap.put(jobNodeId, false);
+        if (FlowUtil.StringUtil.isEmpty(id)) {
+            id = FlowUtil.UUIDUtil.randomUUID();
         }
-    }
 
-    private void initJobLineMaps() {
-        parentJobLineMap = new HashMap<>();
-        childJobLineMap = new HashMap<>();
-        jobToFromLineCalledMap = new HashMap<>();
-
-        String fromId;
-        String toId;
-        String toFromId;
-        for (JobLine jobLine : jobLineList) {
-            fromId = jobLine.getFromId();
-            toId = jobLine.getToId();
-
-            if (!childJobLineMap.containsKey(fromId)) {
-                childJobLineMap.put(fromId, new ArrayList<>());
-            }
-            childJobLineMap.get(fromId).add(toId);
-
-            if (!parentJobLineMap.containsKey(toId)) {
-                parentJobLineMap.put(toId, new ArrayList<>());
-            }
-            parentJobLineMap.get(toId).add(fromId);
-
-            toFromId = toId + "@" + fromId;
-            jobToFromLineCalledMap.put(toFromId, false);
-        }
-    }
-
-    private void graphNodeLineToJobNodeLine() {
-        jobNodeList = new ArrayList<>();
-
-        abstractGraphNodeList.forEach(abstractGraphNode -> {
-            jobNodeList.add(new JobNode(abstractGraphNode.getId(), Const.Graph.NodeLine.IS_NODE, Const.Graph.NodeLine.NON_LINE, getJobNodeName(abstractGraphNode), abstractGraphNode.getModuleId(), abstractGraphNode.getJobModuleBody(), abstractGraphNode.getAsync(), abstractGraphNode));
-        });
-        jobLineList = new ArrayList<>();
-
-        String fromId;
-        String toId;
-        String fromToId;
-        for (AbstractGraphLine abstractGraphLine : abstractGraphLineList) {
-            fromId = abstractGraphLine.getFromId();
-            toId = abstractGraphLine.getToId();
-            fromToId = abstractGraphLine.getFromToId();
-
-            jobNodeList.add(new JobNode(fromToId, Const.Graph.NodeLine.NON_NODE, Const.Graph.NodeLine.IS_LINE, getJobNodeName(abstractGraphLine), JobModuleIdEnum.LINE_JOB.name(), abstractGraphLine.getJobModuleBody(), abstractGraphLine.getAsync(), abstractGraphLine));
-            jobLineList.add(new JobLine(fromId, fromToId));
-            jobLineList.add(new JobLine(fromToId, toId));
-        }
+        jobNodeStartList = new ArrayList<>();
+        this.graphNodeStartIdList.forEach(graphNodeStartId -> jobNodeStartList.add(jobIdToNodeMap.get(graphNodeStartId)));
     }
 
     /**
@@ -504,17 +514,10 @@ public class JobStruct {
         return jobNodeName;
     }
 
-    /**
-     * 建造者模式入口
-     * @param
-     */
     public static JobStructBuilder builder() {
         return new JobStructBuilder();
     }
 
-    /**
-     * 建造者模式
-     */
     public static class JobStructBuilder {
 
         private String id;
