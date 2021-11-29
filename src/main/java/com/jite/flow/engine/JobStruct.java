@@ -2,7 +2,6 @@ package com.jite.flow.engine;
 
 import java.util.*;
 import com.alibaba.fastjson.JSON;
-import com.jite.flow.async.AsyncGraph;
 import com.jite.flow.config.LoggerConfig;
 import com.jite.flow.constant.Const;
 import com.jite.flow.handler.JobBuildHandler;
@@ -67,7 +66,7 @@ public class JobStruct {
     /**
      * 原始图线 Id(from/to) 对应 原始图线 Map
      */
-    private Map<String, AbstractGraphLine> abstractGraphLineMap;
+//    private Map<String, AbstractGraphLine> abstractGraphLineMap;
 
     /**
      * 原始图节点 Id 对应 原始图子节点列表 Map
@@ -122,12 +121,22 @@ public class JobStruct {
     /**
      * 儿子作业 Id 对应 所有父亲作业节点的关系线
      */
-    private Map<String, List<String>> parentJobLineMap;
+//    private Map<String, List<String>> parentJobLineMap;
 
     /**
      * 父亲作业 Id 对应 所有儿子作业节点的关系线
      */
-    private Map<String, List<String>> childJobLineMap;
+//    private Map<String, List<String>> childJobLineMap;
+
+    /**
+     * 儿子作业 Id 对应 所有父亲作业节点
+     */
+    private Map<String, List<JobNode>> parentJobNodeListMap;
+
+    /**
+     * 父亲作业 Id 对应 所有儿子作业节点
+     */
+    private Map<String, List<JobNode>> childJobNodeListMap;
 
     /**
      * 线程池: 提供给引擎 JobNode 执行作业
@@ -156,12 +165,12 @@ public class JobStruct {
      * TRUE: 已使用
      * FALSE: 未使用
      */
-    private Map<String, Boolean> jobToFromLineCalledMap;
+//    private Map<String, Boolean> jobToFromLineCalledMap;
 
     /**
      * 主干流水线计数器
      */
-    private CountDownLatch countDownLatch;
+//    private CountDownLatch countDownLatch;
 
     private void init() {
         // 初始化日志框架
@@ -169,9 +178,6 @@ public class JobStruct {
 
         // 初始化作业模板、作业属性模板
         initJobs();
-
-        // 初始化所有开始节点 Id
-        initGraphStartIds();
 
         // 初始化 idToParamMap、abstractGraphNodeMap、abstractGraphLineMap、parentAbstractGraphNodeListMap、childAbstractGraphNodeListMap
         initGraphMaps();
@@ -182,18 +188,21 @@ public class JobStruct {
         // Graph模式 Node/Line 转 Job模式 Node/Line
         initJobNodeLineList();
 
-        // 初始化 jobNodeFutureMap、jobNodeCalledMap、jobIdToNodeMap
+        // 初始化 jobNodeFutureMap、jobNodeCalledMap、jobIdToNodeMap、parentJobNodeMap、childJobNodeMap
         initJobNodeMaps();
 
         // 初始化 parentJobLineMap、childJobLineMap、jobToFromLineCalledMap
-        initJobLineMaps();
+//        initJobLineMaps();
 
 //        initParentJobNodeLineMap();
 
-        // 初始化 jobIdToModuleMap
+        // 初始化 jobIdToLocalMap
         initJobLocalMap();
 
-        // 初始化 executorService、id(默认值: UUID)、起始作业节点
+        // 初始化所有开始图/作业节点 Id
+        initStartIds();
+
+        // 初始化 executorService、id(默认值: UUID)
         initOthers();
     }
 
@@ -215,35 +224,12 @@ public class JobStruct {
     }
 
     /**
-     * 初始化所有开始节点 Id
-     * @param
-     */
-    private void initGraphStartIds() {
-        this.graphNodeStartIdList = new ArrayList<>();
-        HashSet<String> initStartIdSet = new HashSet<>();
-
-        for (AbstractGraphLine abstractGraphLine : abstractGraphLineList) {
-            initStartIdSet.add(abstractGraphLine.getToId());
-        }
-
-        String graphNodeId;
-        for (AbstractGraphNode abstractGraphNode : abstractGraphNodeList) {
-            graphNodeId = abstractGraphNode.getId();
-            // 找到起始节点
-            if (!initStartIdSet.contains(graphNodeId)) {
-                this.graphNodeStartIdList.add(graphNodeId);
-            }
-        }
-    }
-
-    /**
-     * 初始化 idToParamMap、abstractGraphNodeMap、abstractGraphLineMap
-     * parentAbstractGraphNodeListMap、childAbstractGraphNodeListMap
+     * 初始化 idToParamMap、abstractGraphNodeMap、parentAbstractGraphNodeListMap、childAbstractGraphNodeListMap
      * @param
      */
     private void initGraphMaps() {
         abstractGraphNodeMap = new HashMap<>();
-        abstractGraphLineMap = new HashMap<>();
+//        abstractGraphLineMap = new HashMap<>();
         childAbstractGraphNodeListMap = new HashMap<>();
         parentAbstractGraphNodeListMap = new HashMap<>();
         idToParamMap = new HashMap<>();
@@ -389,18 +375,20 @@ public class JobStruct {
     private void initJobNodeLineList() {
         jobNodeList = new ArrayList<>();
         jobLineList = new ArrayList<>();
-        abstractGraphNodeList.forEach(abstractGraphNode -> jobNodeList.add(new JobNode(abstractGraphNode.getId(), getJobNodeName(abstractGraphNode), abstractGraphNode.getModuleId(), abstractGraphNode.getModuleParam(), abstractGraphNode.getAsync(), abstractGraphNode)));
+        abstractGraphNodeList.forEach(abstractGraphNode -> jobNodeList.add(new JobNode(abstractGraphNode.getId(), getJobNodeName(abstractGraphNode), abstractGraphNode.getModuleId(), abstractGraphNode.getModuleParam(), abstractGraphNode)));
         abstractGraphLineList.forEach(abstractGraphLine -> jobLineList.add(new JobLine(abstractGraphLine.getFromId(), abstractGraphLine.getToId())));
     }
 
     /**
-     * 初始化 jobNodeFutureMap、jobNodeCalledMap、jobIdToNodeMap
+     * 初始化 jobNodeFutureMap、jobNodeCalledMap、jobIdToNodeMap、parentJobNodeMap、childJobNodeMap
      * @param
      */
     private void initJobNodeMaps() {
         jobNodeFutureMap = new ConcurrentHashMap<>();
         jobIdToNodeMap = new HashMap<>();
         jobNodeCalledMap = new HashMap<>();
+        parentJobNodeListMap = new HashMap<>();
+        childJobNodeListMap = new HashMap<>();
 
         String jobNodeId;
         for (JobNode jobNode : jobNodeList) {
@@ -408,16 +396,6 @@ public class JobStruct {
             jobIdToNodeMap.put(jobNodeId, jobNode);
             jobNodeCalledMap.put(jobNodeId, Const.JobNode.Call.NON_CALLED);
         }
-    }
-
-    /**
-     * 初始化 parentJobLineMap、childJobLineMap、jobToFromLineCalledMap
-     * @param
-     */
-    private void initJobLineMaps() {
-        parentJobLineMap = new HashMap<>();
-        childJobLineMap = new HashMap<>();
-        jobToFromLineCalledMap = new HashMap<>();
 
         String fromId;
         String toId;
@@ -425,91 +403,120 @@ public class JobStruct {
             fromId = jobLine.getFromId();
             toId = jobLine.getToId();
 
-            if (!childJobLineMap.containsKey(fromId)) {
-                childJobLineMap.put(fromId, new ArrayList<>());
+            if (!parentJobNodeListMap.containsKey(toId)) {
+                parentJobNodeListMap.put(toId, new ArrayList<>());
             }
-            childJobLineMap.get(fromId).add(toId);
+            parentJobNodeListMap.get(toId).add(jobIdToNodeMap.get(fromId));
 
-            if (!parentJobLineMap.containsKey(toId)) {
-                parentJobLineMap.put(toId, new ArrayList<>());
+            if (!childJobNodeListMap.containsKey(fromId)) {
+                childJobNodeListMap.put(fromId, new ArrayList<>());
             }
-            parentJobLineMap.get(toId).add(fromId);
-
-            // TODO 待确认是否有用
-            jobToFromLineCalledMap.put(jobLine.getToFromId(), Const.JobLine.Call.NON_CALLED);
+            childJobNodeListMap.get(fromId).add(jobIdToNodeMap.get(toId));
         }
     }
 
     /**
-     * TODO check
-     * 初始化 jobIdToModuleMap
+     * 初始化 parentJobLineMap、childJobLineMap、jobToFromLineCalledMap
+     * @param
+     */
+//    private void initJobLineMaps() {
+//        parentJobLineMap = new HashMap<>();
+//        childJobLineMap = new HashMap<>();
+//        jobToFromLineCalledMap = new HashMap<>();
+//
+//        String fromId;
+//        String toId;
+//        for (JobLine jobLine : jobLineList) {
+//            fromId = jobLine.getFromId();
+//            toId = jobLine.getToId();
+//
+//            if (!childJobLineMap.containsKey(fromId)) {
+//                childJobLineMap.put(fromId, new ArrayList<>());
+//            }
+//            childJobLineMap.get(fromId).add(toId);
+//
+//            if (!parentJobLineMap.containsKey(toId)) {
+//                parentJobLineMap.put(toId, new ArrayList<>());
+//            }
+//            parentJobLineMap.get(toId).add(fromId);
+//
+//            // TODO 待确认是否有用
+//            jobToFromLineCalledMap.put(jobLine.getToFromId(), Const.JobLine.Call.NON_CALLED);
+//        }
+//    }
+
+    /**
+     * 初始化 jobIdToLocalMap
      * @param
      */
     private void initJobLocalMap() {
         jobIdToLocalMap = new HashMap<>();
 
         String jobNodeId;
-        List<String> parentJobNodeIdList;
-        List<String> childJobNodeIdList;
-        List<JobNode> parentJobNodeList = new ArrayList<>();
-        List<JobNode> childJobNodeList = new ArrayList<>();
         for (JobNode jobNode : jobNodeList) {
             jobNodeId = jobNode.getId();
 
-            parentJobNodeIdList = parentJobLineMap.get(jobNodeId);
-            if (FlowUtil.CollectionUtil.isNotEmpty(parentJobNodeIdList)) {
-                for (String parentJobNodeId : parentJobNodeIdList) {
-                    parentJobNodeList.add(jobIdToNodeMap.get(parentJobNodeId));
-                }
-            }
+            // 为当前 JobNode 提供父子节点链
+            JobLocal jobLocal = new JobLocal(jobNode, parentJobNodeListMap.get(jobNodeId), childJobNodeListMap.get(jobNodeId));
 
-            childJobNodeIdList = childJobLineMap.get(jobNodeId);
-            if (FlowUtil.CollectionUtil.isNotEmpty(childJobNodeIdList)) {
-                for (String childJobNodeId : childJobNodeIdList) {
-                    childJobNodeList.add(jobIdToNodeMap.get(childJobNodeId));
-                }
-            }
-
-            JobLocal jobLocal = new JobLocal(jobNode, parentJobNodeList, childJobNodeList);
             // 转化自定义节点配置
-            AbstractGraph graphNodeOrLine = jobLocal.getJobNode().getAbstractGraph();
-            jobLocal.setLocalMap(JSON.parseObject(JSON.toJSONString(graphNodeOrLine), Map.class));
+            AbstractGraphNode graphNode = jobLocal.getJobNode().getAbstractGraphNode();
+            jobLocal.setLocalMap(JSON.parseObject(JSON.toJSONString(graphNode), Map.class));
             jobIdToLocalMap.put(jobNodeId, jobLocal);
         }
     }
 
     /**
-     * 初始化 executorService、id(默认值: UUID)、起始作业节点
+     * 初始化所有开始图/作业节点 Id
      * @param
      */
-    private void initOthers() {
-        countDownLatch = new CountDownLatch((int) mainGraphNodeEndIdRateMap.values().stream().filter(item -> FlowUtil.BooleanUtil.isFalse(item.booleanValue())).count());
-        executorService = Executors.newFixedThreadPool(10);
+    private void initStartIds() {
+        // 初始化开始图节点
+        this.graphNodeStartIdList = new ArrayList<>();
+        HashSet<String> initStartIdSet = new HashSet<>();
 
-        if (FlowUtil.StringUtil.isEmpty(id)) {
-            id = FlowUtil.UUIDUtil.randomUUID();
+        for (AbstractGraphLine abstractGraphLine : abstractGraphLineList) {
+            initStartIdSet.add(abstractGraphLine.getToId());
         }
 
+        String graphNodeId;
+        for (AbstractGraphNode abstractGraphNode : abstractGraphNodeList) {
+            graphNodeId = abstractGraphNode.getId();
+            // 找到起始节点
+            if (!initStartIdSet.contains(graphNodeId)) {
+                this.graphNodeStartIdList.add(graphNodeId);
+            }
+        }
+
+        // 初始化开始作业节点
         jobNodeStartList = new ArrayList<>();
         this.graphNodeStartIdList.forEach(graphNodeStartId -> jobNodeStartList.add(jobIdToNodeMap.get(graphNodeStartId)));
     }
 
     /**
+     * 初始化 executorService、id(默认值: UUID)
+     * @param
+     */
+    private void initOthers() {
+        // TODO 跟异步调用相关
+//        countDownLatch = new CountDownLatch((int) mainGraphNodeEndIdRateMap.values().stream().filter(item -> FlowUtil.BooleanUtil.isFalse(item.booleanValue())).count());
+        executorService = Executors.newFixedThreadPool(10);
+
+        if (FlowUtil.StringUtil.isEmpty(id)) {
+            id = FlowUtil.UUIDUtil.randomUUID();
+        }
+    }
+
+    /**
+     * TODO 最后优化 name
      * 获取 Job 名称 (默认 Id)
      * 如果为 Line, fromId & toId 优先各自 name, 否则各自 id (如: A_B, A_UUIDB, UUIDA_B, UUIDA_UUIDB)
-     * @param abstractGraph
+     * @param abstractGraphNode
      */
-    private String getJobNodeName(AbstractGraph abstractGraph) {
-        String jobNodeName = abstractGraph.getJobNodeName();
+    private String getJobNodeName(AbstractGraphNode abstractGraphNode) {
+        String jobNodeName = abstractGraphNode.getJobNodeName();
         if (FlowUtil.StringUtil.isEmpty(jobNodeName)) {
-            if (abstractGraph instanceof AbstractGraphLine) {
-                AbstractGraphLine abstractGraphLine = (AbstractGraphLine) abstractGraph;
-                jobNodeName = getJobNodeName(abstractGraphNodeMap.get(abstractGraphLine.getFromId()))
-                        + "_"
-                        + getJobNodeName(abstractGraphNodeMap.get(abstractGraphLine.getToId()));
-            } else {
-                jobNodeName = abstractGraph.getJobNodeId();
-            }
+            jobNodeName = abstractGraphNode.getJobNodeId();
         }
         return jobNodeName;
     }
@@ -575,10 +582,6 @@ public class JobStruct {
         return jobNodeCalledMap;
     }
 
-    Map<String, Boolean> getJobToFromLineCalledMap() {
-        return jobToFromLineCalledMap;
-    }
-
     public List<? extends AbstractGraphNode> getAbstractGraphNodeList() {
         return abstractGraphNodeList;
     }
@@ -603,23 +606,23 @@ public class JobStruct {
         return jobIdToLocalMap;
     }
 
-    public Map<String, List<String>> getParentJobLineMap() {
-        return parentJobLineMap;
-    }
+//    public Map<String, List<String>> getParentJobLineMap() {
+//        return parentJobLineMap;
+//    }
+//
+//    public Map<String, List<String>> getChildJobLineMap() {
+//        return childJobLineMap;
+//    }
 
-    public Map<String, List<String>> getChildJobLineMap() {
-        return childJobLineMap;
-    }
+//    public Map<String, AsyncGraph> getAsyncGraphMap() {
+//        return asyncGraphMap;
+//    }
 
-    public Map<String, AsyncGraph> getAsyncGraphMap() {
-        return asyncGraphMap;
-    }
+//    public Map<String, Boolean> getMainGraphNodeEndIdRateMap() {
+//        return mainGraphNodeEndIdRateMap;
+//    }
 
-    public Map<String, Boolean> getMainGraphNodeEndIdRateMap() {
-        return mainGraphNodeEndIdRateMap;
-    }
-
-    public CountDownLatch getCountDownLatch() {
-        return countDownLatch;
-    }
+//    public CountDownLatch getCountDownLatch() {
+//        return countDownLatch;
+//    }
 }

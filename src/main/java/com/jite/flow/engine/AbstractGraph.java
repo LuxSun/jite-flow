@@ -8,11 +8,9 @@ public abstract class AbstractGraph {
 
     protected String id;
 
-    protected Boolean async;
+//    protected Boolean async;
 
     protected String name;
-
-    protected abstract String getJobNodeName();
 
     public String getId() {
         return id;
@@ -22,13 +20,13 @@ public abstract class AbstractGraph {
         this.id = id;
     }
 
-    public Boolean getAsync() {
-        return async;
-    }
+//    public Boolean getAsync() {
+//        return async;
+//    }
 
-    public void setAsync(Boolean async) {
-        this.async = async;
-    }
+//    public void setAsync(Boolean async) {
+//        this.async = async;
+//    }
 
     public String getName() {
         return name;

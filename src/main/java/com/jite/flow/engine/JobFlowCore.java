@@ -1,6 +1,7 @@
 package com.jite.flow.engine;
 
 import com.jite.flow.async.AsyncLineJob;
+import com.jite.flow.constant.Const;
 import com.jite.flow.job.JobContext;
 import com.jite.flow.handler.JobBuildHandler;
 import com.jite.flow.handler.JobExecuteHandler;
@@ -56,19 +57,15 @@ class JobFlowCore {
     }
 
     private void run(JobNode jobNode, JobNode parentJobNode) {
-
         String nowJobNodeId = jobNode.getId();
-        String parentJobNodeId = null;
-        if (FlowUtil.ObjectUtil.nonNull(parentJobNode)) {
-            parentJobNodeId = parentJobNode.getId();
-        }
+        String parentJobNodeId = FlowUtil.ObjectUtil.nonNull(parentJobNode) ? parentJobNode.getId() : null;
 
         // 保证当前作业未被执行过(相同 JobNode 才锁)
         synchronized (jobNode) {
             if (jobStruct.getJobNodeCalledMap().get(nowJobNodeId)) {
                 return;
             }
-            jobStruct.getJobNodeCalledMap().put(nowJobNodeId, true);
+            jobStruct.getJobNodeCalledMap().put(nowJobNodeId, Const.JobNode.Call.IS_CALLED);
         }
 
         // 保证父亲作业节点执行完毕(自旋锁) TODO CountDownLatch instead of it

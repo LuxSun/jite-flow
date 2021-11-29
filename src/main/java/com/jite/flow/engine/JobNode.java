@@ -23,23 +23,20 @@ public class JobNode {
 
     private String name;
 
-    private Boolean async;
-
     private String jobModuleId;
 
     private JobModule jobModule;
 
     private String jobModuleParam;
 
-    private AbstractGraph abstractGraph;
+    private AbstractGraphNode abstractGraphNode;
 
-    public JobNode(String id, String name, String jobModuleId, String jobModuleParam, Boolean async, AbstractGraph abstractGraph) {
+    public JobNode(String id, String name, String jobModuleId, String jobModuleParam, AbstractGraphNode abstractGraphNode) {
         this.id = id;
         this.name = name;
-        this.async = async;
         this.jobModuleId = jobModuleId;
         this.jobModuleParam = jobModuleParam;
-        this.abstractGraph = abstractGraph;
+        this.abstractGraphNode = abstractGraphNode;
 
         if (FlowUtil.StringUtil.isNotEmpty(jobModuleParam)) {
             this.jobModule = JobModuleBuildHandler.getJobModule(jobModuleId, jobModuleParam);
@@ -89,8 +86,8 @@ public class JobNode {
         this.parentJobGraphLineMap = parentJobGraphLineMap;
     }
 
-    public AbstractGraph getAbstractGraph() {
-        return abstractGraph;
+    public AbstractGraphNode getAbstractGraphNode() {
+        return abstractGraphNode;
     }
 
     public String getJobModuleId() {
@@ -107,14 +104,6 @@ public class JobNode {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public Boolean getAsync() {
-        return async;
-    }
-
-    public void setAsync(Boolean async) {
-        this.async = async;
     }
 
     public String getId() {

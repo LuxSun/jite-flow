@@ -19,8 +19,8 @@ public class Const {
     public static class JobNode {
 
         public static class Call {
-            public static Boolean IS_CALLED = false;
-            public static Boolean NON_CALLED = true;
+            public static Boolean IS_CALLED = true;
+            public static Boolean NON_CALLED = false;
         }
     }
 
@@ -31,8 +31,8 @@ public class Const {
         }
 
         public static class Call {
-            public static Boolean IS_CALLED = false;
-            public static Boolean NON_CALLED = true;
+            public static Boolean IS_CALLED = true;
+            public static Boolean NON_CALLED = false;
         }
     }
 

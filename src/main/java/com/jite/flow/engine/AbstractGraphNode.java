@@ -10,7 +10,6 @@ public abstract class AbstractGraphNode extends AbstractGraph {
 
     protected String moduleParam;
 
-    @Override
     protected String getJobNodeName() {
         return getName();
     }
