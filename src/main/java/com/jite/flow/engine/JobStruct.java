@@ -161,6 +161,14 @@ public class JobStruct {
     private Map<String, Boolean> jobNodeCalledMap;
 
     /**
+     * 作业节点 Id 对应 所有父作业 Id 集合
+     * 避免 Future 作业是重复被判断以至于影响该作业的所有父亲作业执行完成度
+     * TRUE: 已使用
+     * FLASE: 未使用
+     */
+    private Map<String, Map<String, Boolean>> parentJobNodeCalledMap;
+
+    /**
      * 子到父关系线 Id 对应 关系线使用状态
      * TRUE: 已使用
      * FALSE: 未使用
@@ -188,7 +196,7 @@ public class JobStruct {
         // Graph模式 Node/Line 转 Job模式 Node/Line
         initJobNodeLineList();
 
-        // 初始化 jobNodeFutureMap、jobNodeCalledMap、jobIdToNodeMap、parentJobNodeMap、childJobNodeMap
+        // 初始化 jobNodeCalledMap、jobIdToNodeMap、parentJobNodeMap、childJobNodeMap
         initJobNodeMaps();
 
         // 初始化 parentJobLineMap、childJobLineMap、jobToFromLineCalledMap
@@ -202,7 +210,7 @@ public class JobStruct {
         // 初始化所有开始图/作业节点 Id
         initStartIds();
 
-        // 初始化 executorService、id(默认值: UUID)
+        // 初始化 executorService、id(默认值: UUID)、jobNodeFutureMap
         initOthers();
     }
 
@@ -380,15 +388,15 @@ public class JobStruct {
     }
 
     /**
-     * 初始化 jobNodeFutureMap、jobNodeCalledMap、jobIdToNodeMap、parentJobNodeMap、childJobNodeMap
+     * 初始化 jobNodeCalledMap、jobIdToNodeMap、parentJobNodeMap、childJobNodeMap、parentJobNodeIdSetMap
      * @param
      */
     private void initJobNodeMaps() {
-        jobNodeFutureMap = new ConcurrentHashMap<>();
         jobIdToNodeMap = new HashMap<>();
         jobNodeCalledMap = new HashMap<>();
         parentJobNodeListMap = new HashMap<>();
         childJobNodeListMap = new HashMap<>();
+        parentJobNodeCalledMap = new HashMap<>();
 
         String jobNodeId;
         for (JobNode jobNode : jobNodeList) {
@@ -403,15 +411,25 @@ public class JobStruct {
             fromId = jobLine.getFromId();
             toId = jobLine.getToId();
 
+            // 父作业集合
             if (!parentJobNodeListMap.containsKey(toId)) {
                 parentJobNodeListMap.put(toId, new ArrayList<>());
+                parentJobNodeCalledMap.put(toId, new HashMap<>());
             }
             parentJobNodeListMap.get(toId).add(jobIdToNodeMap.get(fromId));
+            parentJobNodeCalledMap.get(toId).put(fromId, Const.JobNode.Call.NON_CALLED);
 
+            // 子作业集合
             if (!childJobNodeListMap.containsKey(fromId)) {
                 childJobNodeListMap.put(fromId, new ArrayList<>());
             }
             childJobNodeListMap.get(fromId).add(jobIdToNodeMap.get(toId));
+
+            // 维护每个 JobNode 对应 所有父作业集合
+            if (FlowUtil.CollectionUtil.isEmpty(jobIdToNodeMap.get(toId).getParentJobNodeMap())) {
+                jobIdToNodeMap.get(toId).setParentJobNodeMap(new HashMap<>());
+            }
+            jobIdToNodeMap.get(toId).getParentJobNodeMap().put(fromId, jobIdToNodeMap.get(fromId));
         }
     }
 
@@ -505,6 +523,8 @@ public class JobStruct {
         if (FlowUtil.StringUtil.isEmpty(id)) {
             id = FlowUtil.UUIDUtil.randomUUID();
         }
+
+        jobNodeFutureMap = new ConcurrentHashMap<>();
     }
 
     /**
@@ -625,4 +645,17 @@ public class JobStruct {
 //    public CountDownLatch getCountDownLatch() {
 //        return countDownLatch;
 //    }
+
+
+    public Map<String, List<JobNode>> getParentJobNodeListMap() {
+        return parentJobNodeListMap;
+    }
+
+    public Map<String, List<JobNode>> getChildJobNodeListMap() {
+        return childJobNodeListMap;
+    }
+
+    public Map<String, Map<String, Boolean>> getParentJobNodeCalledMap() {
+        return parentJobNodeCalledMap;
+    }
 }

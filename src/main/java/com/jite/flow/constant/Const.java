@@ -29,11 +29,6 @@ public class Const {
         public static class Mark {
             public static String FROM_TO = "@";
         }
-
-        public static class Call {
-            public static Boolean IS_CALLED = true;
-            public static Boolean NON_CALLED = false;
-        }
     }
 
     public static class AbstractJobModule {

@@ -13,13 +13,9 @@ public class JobNode {
 
     private String id;
 
-    private JobNode parentJobGraphNode;
+    private JobNode parentJobNode;
 
-    private Map<String, JobNode> parentJobGraphNodeMap;
-
-    private JobNode parentJobGraphLine;
-
-    private Map<String, JobNode> parentJobGraphLineMap;
+    private Map<String, JobNode> parentJobNodeMap;
 
     private String name;
 
@@ -62,28 +58,20 @@ public class JobNode {
         this.jobModuleParam = jobModuleParam;
     }
 
-    public JobNode getParentJobGraphNode() {
-        return parentJobGraphNode;
+    public JobNode getParentJobNode() {
+        return parentJobNode;
     }
 
-    public void setParentJobGraphNode(JobNode parentJobGraphNode) {
-        this.parentJobGraphNode = parentJobGraphNode;
+    public void setParentJobNode(JobNode parentJobNode) {
+        this.parentJobNode = parentJobNode;
     }
 
-    public Map<String, JobNode> getParentJobGraphNodeMap() {
-        return parentJobGraphNodeMap;
+    public Map<String, JobNode> getParentJobNodeMap() {
+        return parentJobNodeMap;
     }
 
-    public void setParentJobGraphNodeMap(Map<String, JobNode> parentJobGraphNodeMap) {
-        this.parentJobGraphNodeMap = parentJobGraphNodeMap;
-    }
-
-    public Map<String, JobNode> getParentJobGraphLineMap() {
-        return parentJobGraphLineMap;
-    }
-
-    public void setParentJobGraphLineMap(Map<String, JobNode> parentJobGraphLineMap) {
-        this.parentJobGraphLineMap = parentJobGraphLineMap;
+    public void setParentJobNodeMap(Map<String, JobNode> parentJobNodeMap) {
+        this.parentJobNodeMap = parentJobNodeMap;
     }
 
     public AbstractGraphNode getAbstractGraphNode() {
@@ -108,14 +96,6 @@ public class JobNode {
 
     public String getId() {
         return id;
-    }
-
-    public JobNode getParentJobGraphLine() {
-        return parentJobGraphLine;
-    }
-
-    public void setParentJobGraphLine(JobNode parentJobGraphLine) {
-        this.parentJobGraphLine = parentJobGraphLine;
     }
 
     public void setId(String id) {
