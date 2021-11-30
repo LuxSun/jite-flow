@@ -12,13 +12,13 @@ import java.util.logging.Logger;
  * @author Lux Sun
  * @date 2021/10/13
  */
-public class JobModuleBindHandler {
+public class ModuleJobBindHandler {
 
-    private static final Logger LOG = Logger.getLogger(JobModuleBindHandler.class.getName());
+    private static final Logger LOG = Logger.getLogger(ModuleJobBindHandler.class.getName());
 
     private static final Map<String, String> MODULE_JOB_MAP = new ConcurrentHashMap<>();
 
-    private JobModuleBindHandler() {}
+    private ModuleJobBindHandler() {}
 
     static {
         register(ModuleIdEnum.DEFAULT_MODULE, JobIdEnum.DEFAULT_JOB);
@@ -26,6 +26,10 @@ public class JobModuleBindHandler {
 
     public static void init() {
         LOG.info("Load the Module-Job-Binder successfully");
+    }
+
+    public static String getJobId(String moduleId) {
+        return MODULE_JOB_MAP.get(moduleId);
     }
 
     public static void register(String moduleId, String jobId) {

@@ -1,6 +1,7 @@
 package com.jite.flow.engine;
 
 import com.jite.flow.constant.Const;
+import com.jite.flow.handler.ModuleJobBindHandler;
 import com.jite.flow.job.JobContext;
 import com.jite.flow.handler.JobBuildHandler;
 import com.jite.flow.handler.JobExecuteHandler;
@@ -104,7 +105,7 @@ class JobFlowCore {
 //            return;
 //        }
 
-        Job realJob = JobBuildHandler.getJob(jobNode.getModuleId());
+        Job realJob = JobBuildHandler.getJob(ModuleJobBindHandler.getJobId(jobNode.getModuleId()));
         // 开始执行(如果是异步线 JobNode 也执行完先它自己的 Job)
         JobReport jobReport = JobExecuteHandler.builder().job(realJob).build().execute(jobContext);
         reportContext.put(nowJobNodeId, jobReport);
