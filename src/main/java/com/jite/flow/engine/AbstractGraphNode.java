@@ -22,10 +22,6 @@ public abstract class AbstractGraphNode extends AbstractGraph {
         return moduleId;
     }
 
-    public void setModuleId(String moduleId) {
-        this.moduleId = moduleId;
-    }
-
     public String getModuleParam() {
         return moduleParam;
     }

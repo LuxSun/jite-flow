@@ -1,8 +1,7 @@
 package com.jite.flow.example.mock;
 
 import com.alibaba.fastjson.JSON;
-import com.jite.flow.constant.Const;
-import com.jite.flow.constant.JobModuleIdEnum;
+import com.jite.flow.constant.ModuleIdEnum;
 import com.jite.flow.example.Line;
 import com.jite.flow.example.Node;
 
@@ -39,9 +38,9 @@ public class Demo1 extends AbstractDemo {
 
         private void mockData() {
             nodeList = new ArrayList<>();
-            nodeList.add(new Node("A", JobModuleIdEnum.DEFAULT_JOB.name()));
-            nodeList.add(new Node("B", JobModuleIdEnum.DEFAULT_JOB.name()));
-            nodeList.add(new Node("C", JobModuleIdEnum.DEFAULT_JOB.name()));
+            nodeList.add(new Node("A", ModuleIdEnum.DEFAULT_MODULE.name()));
+            nodeList.add(new Node("B", ModuleIdEnum.DEFAULT_MODULE.name()));
+            nodeList.add(new Node("C", ModuleIdEnum.DEFAULT_MODULE.name()));
 
             lineList = new ArrayList<>();
 

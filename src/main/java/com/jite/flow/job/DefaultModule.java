@@ -4,7 +4,7 @@ package com.jite.flow.job;
  * @author Lux Sun
  * @date 2021/10/18
  */
-public class DefaultJobModule extends AbstractJobModule {
+public class DefaultModule extends AbstractModule {
 
     private Integer second;
 
@@ -18,7 +18,7 @@ public class DefaultJobModule extends AbstractJobModule {
 
     @Override
     public String toString() {
-        return "DefaultJobModule{" +
+        return "DefaultModule{" +
                 "second=" + second +
                 ", id='" + id + '\'' +
                 '}';

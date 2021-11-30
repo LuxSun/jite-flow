@@ -1,7 +1,7 @@
 package com.jite.flow.engine;
 
-import com.jite.flow.handler.JobModuleBuildHandler;
-import com.jite.flow.job.JobModule;
+import com.jite.flow.handler.ModuleBuildHandler;
+import com.jite.flow.job.Module;
 import com.jite.flow.util.FlowUtil;
 import java.util.Map;
 
@@ -17,45 +17,43 @@ public class JobNode {
 
     private Map<String, JobNode> parentJobNodeMap;
 
+    private Map<String, JobNode> childJobNodeMap;
+
     private String name;
 
-    private String jobModuleId;
+    private String moduleId;
 
-    private JobModule jobModule;
+    private Module module;
 
-    private String jobModuleParam;
+    private String moduleParam;
 
     private AbstractGraphNode abstractGraphNode;
 
-    public JobNode(String id, String name, String jobModuleId, String jobModuleParam, AbstractGraphNode abstractGraphNode) {
+    public JobNode(String id, String name, String moduleId, String moduleParam, AbstractGraphNode abstractGraphNode) {
         this.id = id;
         this.name = name;
-        this.jobModuleId = jobModuleId;
-        this.jobModuleParam = jobModuleParam;
+        this.moduleId = moduleId;
+        this.moduleParam = moduleParam;
         this.abstractGraphNode = abstractGraphNode;
 
-        if (FlowUtil.StringUtil.isNotEmpty(jobModuleParam)) {
-            this.jobModule = JobModuleBuildHandler.getJobModule(jobModuleId, jobModuleParam);
+        if (FlowUtil.StringUtil.isNotEmpty(moduleParam)) {
+            this.module = ModuleBuildHandler.getModule(moduleId, moduleParam);
         }
     }
 
-    public <T> T getJobModule(Class<T> clazz) {
-        if (FlowUtil.ObjectUtil.isNull(this.jobModule)) {
+    public <T> T getModule(Class<T> clazz) {
+        if (FlowUtil.ObjectUtil.isNull(this.module)) {
             return null;
         }
-        return this.jobModule.get(clazz);
+        return this.module.get(clazz);
     }
 
-    public void setJobModule(JobModule jobModule) {
-        this.jobModule = jobModule;
+    public String getModuleParam() {
+        return moduleParam;
     }
 
-    public String getJobModuleParam() {
-        return jobModuleParam;
-    }
-
-    public void setJobModuleParam(String jobModuleParam) {
-        this.jobModuleParam = jobModuleParam;
+    public void setModuleParam(String moduleParam) {
+        this.moduleParam = moduleParam;
     }
 
     public JobNode getParentJobNode() {
@@ -78,12 +76,20 @@ public class JobNode {
         return abstractGraphNode;
     }
 
-    public String getJobModuleId() {
-        return jobModuleId;
+    public Map<String, JobNode> getChildJobNodeMap() {
+        return childJobNodeMap;
     }
 
-    public void setJobModuleId(String jobModuleId) {
-        this.jobModuleId = jobModuleId;
+    public void setChildJobNodeMap(Map<String, JobNode> childJobNodeMap) {
+        this.childJobNodeMap = childJobNodeMap;
+    }
+
+    public String getModuleId() {
+        return moduleId;
+    }
+
+    public void setModuleId(String moduleId) {
+        this.moduleId = moduleId;
     }
 
     public String getName() {

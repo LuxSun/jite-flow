@@ -5,7 +5,7 @@ import com.alibaba.fastjson.JSON;
 import com.jite.flow.config.LoggerConfig;
 import com.jite.flow.constant.Const;
 import com.jite.flow.handler.JobBuildHandler;
-import com.jite.flow.handler.JobModuleBuildHandler;
+import com.jite.flow.handler.ModuleBuildHandler;
 import com.jite.flow.job.JobLocal;
 import com.jite.flow.util.FlowUtil;
 import java.util.concurrent.*;
@@ -228,7 +228,7 @@ public class JobStruct {
      */
     private void initJobs() {
         JobBuildHandler.init();
-        JobModuleBuildHandler.init();
+        ModuleBuildHandler.init();
     }
 
     /**
@@ -242,7 +242,7 @@ public class JobStruct {
         parentAbstractGraphNodeListMap = new HashMap<>();
         idToParamMap = new HashMap<>();
 
-        paramList.forEach(param -> idToParamMap.put((String) param.get(Const.AbstractJobModule.Key.ID), param));
+        paramList.forEach(param -> idToParamMap.put((String) param.get(Const.AbstractModule.Key.ID), param));
 
         abstractGraphNodeList.forEach(abstractGraphNode -> {
             abstractGraphNode.setModuleParam(JSON.toJSONString(idToParamMap.get(abstractGraphNode.getId())));
@@ -430,6 +430,12 @@ public class JobStruct {
                 jobIdToNodeMap.get(toId).setParentJobNodeMap(new HashMap<>());
             }
             jobIdToNodeMap.get(toId).getParentJobNodeMap().put(fromId, jobIdToNodeMap.get(fromId));
+
+            // 维护每个 JobNode 对应 所有子作业集合
+            if (FlowUtil.CollectionUtil.isEmpty(jobIdToNodeMap.get(fromId).getChildJobNodeMap())) {
+                jobIdToNodeMap.get(fromId).setChildJobNodeMap(new HashMap<>());
+            }
+            jobIdToNodeMap.get(fromId).getChildJobNodeMap().put(toId, jobIdToNodeMap.get(toId));
         }
     }
 

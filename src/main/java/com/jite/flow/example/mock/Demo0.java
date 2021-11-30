@@ -2,7 +2,7 @@ package com.jite.flow.example.mock;
 
 import com.alibaba.fastjson.JSON;
 import com.jite.flow.constant.Const;
-import com.jite.flow.constant.JobModuleIdEnum;
+import com.jite.flow.constant.ModuleIdEnum;
 import com.jite.flow.example.Line;
 import com.jite.flow.example.Node;
 
@@ -39,27 +39,27 @@ public class Demo0 extends AbstractDemo {
 
         private void mockData() {
             nodeList = new ArrayList<>();
-            nodeList.add(new Node("a", JobModuleIdEnum.DEFAULT_JOB.name()));
-            nodeList.add(new Node("b", JobModuleIdEnum.DEFAULT_JOB.name()));
-            nodeList.add(new Node("c", JobModuleIdEnum.DEFAULT_JOB.name()));
-            nodeList.add(new Node("d", JobModuleIdEnum.DEFAULT_JOB.name()));
-            nodeList.add(new Node("e", JobModuleIdEnum.DEFAULT_JOB.name()));
+            nodeList.add(new Node("a", ModuleIdEnum.DEFAULT_MODULE.name()));
+            nodeList.add(new Node("b", ModuleIdEnum.DEFAULT_MODULE.name()));
+            nodeList.add(new Node("c", ModuleIdEnum.DEFAULT_MODULE.name()));
+            nodeList.add(new Node("d", ModuleIdEnum.DEFAULT_MODULE.name()));
+            nodeList.add(new Node("e", ModuleIdEnum.DEFAULT_MODULE.name()));
 
-            nodeList.add(new Node("A", JobModuleIdEnum.DEFAULT_JOB.name()));
-            nodeList.add(new Node("B", "TEST_B", JobModuleIdEnum.DEFAULT_JOB.name()));
-            nodeList.add(new Node("C", JobModuleIdEnum.DEFAULT_JOB.name()));
-            nodeList.add(new Node("D", JobModuleIdEnum.DEFAULT_JOB.name()));
-            nodeList.add(new Node("F", JobModuleIdEnum.DEFAULT_JOB.name()));
-            nodeList.add(new Node("G", JobModuleIdEnum.DEFAULT_JOB.name()));
-            nodeList.add(new Node("Z", JobModuleIdEnum.DEFAULT_JOB.name()));
+            nodeList.add(new Node("A", ModuleIdEnum.DEFAULT_MODULE.name()));
+            nodeList.add(new Node("B", "TEST_B", ModuleIdEnum.DEFAULT_MODULE.name()));
+            nodeList.add(new Node("C", ModuleIdEnum.DEFAULT_MODULE.name()));
+            nodeList.add(new Node("D", ModuleIdEnum.DEFAULT_MODULE.name()));
+            nodeList.add(new Node("F", ModuleIdEnum.DEFAULT_MODULE.name()));
+            nodeList.add(new Node("G", ModuleIdEnum.DEFAULT_MODULE.name()));
+            nodeList.add(new Node("Z", ModuleIdEnum.DEFAULT_MODULE.name()));
 
-            nodeList.add(new Node("E", JobModuleIdEnum.DEFAULT_JOB.name()));
-            nodeList.add(new Node("H", JobModuleIdEnum.DEFAULT_JOB.name()));
-            nodeList.add(new Node("I", JobModuleIdEnum.DEFAULT_JOB.name()));
-            nodeList.add(new Node("J", JobModuleIdEnum.DEFAULT_JOB.name()));
+            nodeList.add(new Node("E", ModuleIdEnum.DEFAULT_MODULE.name()));
+            nodeList.add(new Node("H", ModuleIdEnum.DEFAULT_MODULE.name()));
+            nodeList.add(new Node("I", ModuleIdEnum.DEFAULT_MODULE.name()));
+            nodeList.add(new Node("J", ModuleIdEnum.DEFAULT_MODULE.name()));
 
-            nodeList.add(new Node("K", JobModuleIdEnum.DEFAULT_JOB.name()));
-            nodeList.add(new Node("L", JobModuleIdEnum.DEFAULT_JOB.name()));
+            nodeList.add(new Node("K", ModuleIdEnum.DEFAULT_MODULE.name()));
+            nodeList.add(new Node("L", ModuleIdEnum.DEFAULT_MODULE.name()));
 
             lineList = new ArrayList<>();
             lineList.add(new Line("L1", "A", "B"));

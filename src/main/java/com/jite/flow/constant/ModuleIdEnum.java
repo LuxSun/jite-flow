@@ -4,7 +4,7 @@ package com.jite.flow.constant;
  * @author Lux Sun
  * @date 2021/10/14
  */
-public enum JobModuleIdEnum {
+public enum ModuleIdEnum {
 
-    DEFAULT_JOB
+    DEFAULT_MODULE
 }

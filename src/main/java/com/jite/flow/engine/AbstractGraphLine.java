@@ -10,11 +10,6 @@ public abstract class AbstractGraphLine extends AbstractGraph {
 
     protected String toId;
 
-    @Override
-    protected String getJobNodeName() {
-        return getName();
-    }
-
     public String getFromId() {
         return fromId;
     }

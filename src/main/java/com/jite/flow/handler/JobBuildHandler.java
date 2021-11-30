@@ -1,9 +1,8 @@
 package com.jite.flow.handler;
 
-import com.jite.flow.constant.JobModuleIdEnum;
+import com.jite.flow.constant.JobIdEnum;
 import com.jite.flow.job.DefaultJob;
 import com.jite.flow.job.Job;
-import com.jite.flow.job.JobModule;
 import com.jite.flow.util.FlowUtil;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -23,30 +22,30 @@ public class JobBuildHandler {
     private JobBuildHandler() {}
 
     static {
-        register(JobModuleIdEnum.DEFAULT_JOB, new DefaultJob());
+        register(JobIdEnum.DEFAULT_JOB, new DefaultJob());
     }
 
     public static void init() {
         LOG.info("Load the Jobs successfully");
     }
 
-    public static Job getJob(String jobModuleId) {
-        if (!JOB_MAP.containsKey(jobModuleId)) {
+    public static Job getJob(String jobId) {
+        if (!JOB_MAP.containsKey(jobId)) {
             return null;
         }
-        Job job = JOB_MAP.get(jobModuleId);
+        Job job = JOB_MAP.get(jobId);
         return FlowUtil.KryoUtil.clone(job);
     }
 
-    public static Job getJob(Enum jobModuleId) {
-        return getJob(jobModuleId.name());
+    public static Job getJob(Enum jobId) {
+        return getJob(jobId.name());
     }
 
-    public static void register(String jobModuleId, Job job) {
-        JOB_MAP.put(jobModuleId, job);
+    public static void register(String jobId, Job job) {
+        JOB_MAP.put(jobId, job);
     }
 
-    public static void register(Enum jobModuleId, Job job) {
-        register(jobModuleId.name(), job);
+    public static void register(Enum jobId, Job job) {
+        register(jobId.name(), job);
     }
 }

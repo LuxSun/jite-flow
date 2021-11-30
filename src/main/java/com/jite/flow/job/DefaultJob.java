@@ -20,7 +20,7 @@ public class DefaultJob implements Job {
     public DefaultJob() {}
 
     // TODO 添加注解
-//    private JobModule jobModule;
+//    private Module module;
 
     @Override
     public JobReport execute(JobContext jobContext) {
@@ -38,12 +38,12 @@ public class DefaultJob implements Job {
         LOG.info(startString);
         ((List<String>) jobContext.get("result")).add(startString);
         try {
-            DefaultJobModule defaultJobModule = nowJobNode.getJobModule(DefaultJobModule.class);
-            if (FlowUtil.ObjectUtil.nonNull(defaultJobModule)) {
-                String content = String.format("[%s] %s - %s 模板内容: %s", graphId, FlowUtil.DateTimeUtil.now(), name, defaultJobModule);
+            DefaultModule defaultModule = nowJobNode.getModule(DefaultModule.class);
+            if (FlowUtil.ObjectUtil.nonNull(defaultModule)) {
+                String content = String.format("[%s] %s - %s 模板内容: %s", graphId, FlowUtil.DateTimeUtil.now(), name, defaultModule);
                 LOG.info(content);
             }
-            Thread.sleep(FlowUtil.DateTimeUtil.toMillisecond(defaultJobModule.getSecond(), FlowUtil.DateTimeUtil.TimeUnitEnum.SECOND));
+            Thread.sleep(FlowUtil.DateTimeUtil.toMillisecond(defaultModule.getSecond(), FlowUtil.DateTimeUtil.TimeUnitEnum.SECOND));
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

@@ -104,7 +104,7 @@ class JobFlowCore {
 //            return;
 //        }
 
-        Job realJob = JobBuildHandler.getJob(jobNode.getJobModuleId());
+        Job realJob = JobBuildHandler.getJob(jobNode.getModuleId());
         // 开始执行(如果是异步线 JobNode 也执行完先它自己的 Job)
         JobReport jobReport = JobExecuteHandler.builder().job(realJob).build().execute(jobContext);
         reportContext.put(nowJobNodeId, jobReport);

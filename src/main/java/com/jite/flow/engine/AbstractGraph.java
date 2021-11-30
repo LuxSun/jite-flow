@@ -8,8 +8,6 @@ public abstract class AbstractGraph {
 
     protected String id;
 
-//    protected Boolean async;
-
     protected String name;
 
     public String getId() {
@@ -19,14 +17,6 @@ public abstract class AbstractGraph {
     public void setId(String id) {
         this.id = id;
     }
-
-//    public Boolean getAsync() {
-//        return async;
-//    }
-
-//    public void setAsync(Boolean async) {
-//        this.async = async;
-//    }
 
     public String getName() {
         return name;

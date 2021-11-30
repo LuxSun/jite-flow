@@ -1,9 +1,10 @@
 package com.jite.flow.bootstrap;
 
 import com.jite.flow.handler.JobBuildHandler;
-import com.jite.flow.handler.JobModuleBuildHandler;
+import com.jite.flow.handler.JobModuleBindHandler;
+import com.jite.flow.handler.ModuleBuildHandler;
 import com.jite.flow.job.Job;
-import com.jite.flow.job.JobModule;
+import com.jite.flow.job.Module;
 
 /**
  * @author Lux Sun
@@ -11,28 +12,27 @@ import com.jite.flow.job.JobModule;
  */
 public class JiteFlowRegister {
 
-    public static void register(String jobModuleId, Job job) {
-        JobBuildHandler.register(jobModuleId, job);
+    public static void register(String jobId, Job job) {
+        JobBuildHandler.register(jobId, job);
     }
 
-    public static void register(String jobModuleId, JobModule jobModule) {
-        JobModuleBuildHandler.register(jobModuleId, jobModule);
+    public static void register(String moduleId, Module module) {
+        ModuleBuildHandler.register(moduleId, module);
     }
 
-    public static void register(Enum jobModuleIdEnum, Job job) {
-        JobBuildHandler.register(jobModuleIdEnum.name(), job);
+    public static void register(Enum jobId, Job job) {
+        JobBuildHandler.register(jobId.name(), job);
     }
 
-    public static void register(Enum jobModuleIdEnum, JobModule jobModule) {
-        JobModuleBuildHandler.register(jobModuleIdEnum.name(), jobModule);
+    public static void register(Enum moduleId, Module module) {
+        ModuleBuildHandler.register(moduleId.name(), module);
     }
 
-    public static void register(String jobModuleId, Job job, JobModule jobModule) {
-        register(jobModuleId, job);
-        register(jobModuleId, jobModule);
+    public static void register(String moduleId, String jobId) {
+        JobModuleBindHandler.register(moduleId, jobId);
     }
 
-    public static void register(Enum jobModuleIdEnum, Job job, JobModule jobModule) {
-        register(jobModuleIdEnum.name(), job, jobModule);
+    public static void register(Enum moduleId, Enum jobId) {
+        register(moduleId.name(), jobId.name());
     }
 }

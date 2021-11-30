@@ -31,7 +31,7 @@ public class Const {
         }
     }
 
-    public static class AbstractJobModule {
+    public static class AbstractModule {
 
         public static class Key {
             public static String ID = "id";
