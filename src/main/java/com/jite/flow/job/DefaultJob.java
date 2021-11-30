@@ -28,8 +28,8 @@ public class DefaultJob implements Job {
             jobContext.put("result", new ArrayList<String>());
         }
 
-        JobNode nowJobNode = jobContext.getJobLocal().getJobNode();
-        String name = nowJobNode.getName();
+        JobNode jobNode = jobContext.getJobLocal().getJobNode();
+        String name = jobNode.getName();
         String graphId = jobContext.getJobStruct().getId();
         if (graphId.length() > 8) {
             graphId = graphId.substring(0, 8);
@@ -38,7 +38,7 @@ public class DefaultJob implements Job {
         LOG.info(startString);
         ((List<String>) jobContext.get("result")).add(startString);
         try {
-            DefaultModule defaultModule = nowJobNode.getModule(DefaultModule.class);
+            DefaultModule defaultModule = jobNode.getModule(DefaultModule.class);
             if (FlowUtil.ObjectUtil.nonNull(defaultModule)) {
                 String content = String.format("[%s] %s - %s 模板内容: %s", graphId, FlowUtil.DateTimeUtil.now(), name, defaultModule);
                 LOG.info(content);

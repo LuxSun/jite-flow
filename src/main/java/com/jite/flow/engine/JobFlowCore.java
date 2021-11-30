@@ -56,20 +56,20 @@ class JobFlowCore {
     }
 
     private void run(JobNode jobNode, JobNode parentJobNode) {
-        String nowJobNodeId = jobNode.getId();
+        String jobNodeId = jobNode.getId();
         String parentJobNodeId = FlowUtil.ObjectUtil.nonNull(parentJobNode) ? parentJobNode.getId() : null;
 
         // 保证当前作业未被执行过(相同 JobNode 才锁)
         synchronized (jobNode) {
-            if (jobStruct.getJobNodeCalledMap().get(nowJobNodeId)) {
+            if (jobStruct.getJobNodeCalledMap().get(jobNodeId)) {
                 return;
             }
-            jobStruct.getJobNodeCalledMap().put(nowJobNodeId, Const.JobNode.Call.IS_CALLED);
+            jobStruct.getJobNodeCalledMap().put(jobNodeId, Const.JobNode.Call.IS_CALLED);
         }
 
         // 保证父亲作业节点执行完毕(自旋锁) TODO CountDownLatch instead of it
-        List<JobNode> preJobNodeList = jobStruct.getParentJobNodeListMap().get(nowJobNodeId);
-        Map<String, Boolean> preJobNodeCalledMap = jobStruct.getParentJobNodeCalledMap().get(nowJobNodeId);
+        List<JobNode> preJobNodeList = jobStruct.getParentJobNodeListMap().get(jobNodeId);
+        Map<String, Boolean> preJobNodeCalledMap = jobStruct.getParentJobNodeCalledMap().get(jobNodeId);
         if (FlowUtil.CollectionUtil.isNotEmpty(preJobNodeList) && preJobNodeList.size() > 1) {
             int preFinishJobNodeNum = preJobNodeList.size();
             try {
@@ -91,7 +91,7 @@ class JobFlowCore {
         }
 
         // 执行 JobNode 任务
-        JobLocal jobLocal = jobStruct.getJobIdToLocalMap().get(nowJobNodeId);
+        JobLocal jobLocal = jobStruct.getJobIdToLocalMap().get(jobNodeId);
 
         // 设定当前 jobLocal
         jobContext.getJobLocalThreadLocal().set(jobLocal);
@@ -108,15 +108,15 @@ class JobFlowCore {
         Job realJob = JobBuildHandler.getJob(ModuleJobBindHandler.getJobId(jobNode.getModuleId()));
         // 开始执行(如果是异步线 JobNode 也执行完先它自己的 Job)
         JobReport jobReport = JobExecuteHandler.builder().job(realJob).build().execute(jobContext);
-        reportContext.put(nowJobNodeId, jobReport);
+        reportContext.put(jobNodeId, jobReport);
 
         // TODO 主干流水线计数器减 1 操作
-//        if (jobStruct.getMainGraphNodeEndIdRateMap().containsKey(nowJobNodeId) && !jobStruct.getMainGraphNodeEndIdRateMap().get(nowJobNodeId)) {
+//        if (jobStruct.getMainGraphNodeEndIdRateMap().containsKey(jobNodeId) && !jobStruct.getMainGraphNodeEndIdRateMap().get(nowJobNodeId)) {
 //            jobStruct.getCountDownLatch().countDown();
 //        }
 
         // 收集子作业节点(下一批执行作业)
-        List<JobNode> nextJobNodeList = jobStruct.getChildJobNodeListMap().get(nowJobNodeId);
+        List<JobNode> nextJobNodeList = jobStruct.getChildJobNodeListMap().get(jobNodeId);
         if (FlowUtil.CollectionUtil.isEmpty(nextJobNodeList)) {
             return;
         }
